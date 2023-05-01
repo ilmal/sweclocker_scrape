@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup as bs
-import time
 import requests
+import os
+from webdriver_manager.chrome import ChromeDriverManager
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -12,11 +13,16 @@ URL="https://www.sweclockers.com/marknad/sok?searchid=f875f4bb-53d9-4121-ba5d-40
 
 def get_url():
 
-    print("Getting url")
-
     base_url = "https://www.sweclockers.com/marknad"
 
-    driver = webdriver.Chrome()
+    dirname = os.path.dirname(__file__)
+    driver_path = dirname.replace("modules", "chromedriver_linux64/chromedriver")
+
+    options = webdriver.ChromeOptions()
+    options.add_argument("--headless")
+    options.add_argument("--no-sandbox")
+
+    driver = webdriver.Chrome(executable_path=ChromeDriverManager().install(), options=options)
 
     driver.get(base_url)
 
@@ -69,9 +75,6 @@ def get_url():
     return url
 
 
-
-
-
 def handle_html(url):
 
     raw_html = requests.get(url).text
@@ -84,12 +87,29 @@ def handle_html(url):
 
     titles = [post.find("h2").text.replace("\n", "").replace("\t", "")[:-1] for post in posts.find_all("tr")]
 
-    print(f"{str(len(posts))} posts found: {str(titles)}")
+    post_urls = [f'https://www.sweclockers.com{post.find_all("td")[1].find("a").get("href")}' for post in posts.find_all("tr")]
 
-    return titles
+    print(f"{str(len(titles))} posts found: {str(titles)}")
+
+    return titles, post_urls
+
+def get_description(post_urls):
+
+    return_arr = []
+    for url in post_urls:
+        raw_html = requests.get(url).text
+        soup = bs(raw_html, "html.parser")
+
+        return_arr.append(soup.find("div", {"class": "market-text"}).text)
+    return return_arr
 
 def web_handler():
 
     url = get_url()
 
-    titles = handle_html(url)
+    titles, post_urls = handle_html(url)
+
+    descriptions = get_description(post_urls)
+
+    return titles, post_urls, descriptions
+
