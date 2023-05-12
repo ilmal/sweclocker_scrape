@@ -4,6 +4,7 @@ from modules.web_handler import web_handler
 from modules.snapchat_web import send_snapchat
 from modules.database.add_db import add_db
 from modules.database.check_db import check_db
+from modules.story_pusher import post_story
 
 def main():
 
@@ -36,9 +37,18 @@ def main():
         add_db(post_urls_new)
 
 def init():
+    post_story()
+    counter = 0
     while True:
+        counter += 1
         main()
         time.sleep(20)
+
+        if counter >= 4320:
+            counter = 0
+            post_story()
+
+
 
 if __name__ == "__main__":
     init()
