@@ -56,8 +56,6 @@ Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/11
 def check_for_messages(driver):
     user_bodys = get_element(driver, "O4POs", "CLASS_NAME")
 
-    print(user_bodys)
-
     for index, user_body in enumerate(user_bodys):
         name = user_body.find_element(By.XPATH, "./div[2]/span").text
         message = user_body.find_element(By.XPATH, "./div[2]/div").text
@@ -72,9 +70,11 @@ def read_messages(driver, element):
     ActionChains(driver).send_keys(Keys.CONTROL + "R")
     time.sleep(1)
 
-    chat_window = element.find_element(By.ID, "cv-415e9c75-260f-5452-b6e3-0d241ec92c22")
+    chats = driver.find_elements(By.CLASS_NAME, "T1yt2")
     
-    print(chat_window.text)
+    latest_chat = chats[-1].text.split("\n")[-1]
+
+    print(latest_chat)
 
 
 
